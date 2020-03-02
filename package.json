@@ -1,0 +1,30 @@
+{
+  "name": "my-post-node",
+  "version": "1.0.0",
+  "description": "用于测试接口pc端的后台管理",
+  "main": "index.js",
+  "scripts": {
+    "dev": "cross-env NODE_ENV=dev nodemon ./src/index.js",
+    "start": "cross-env NODE_ENV=production node src/index.js",
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "author": "王浩，吕嘉文",
+  "license": "ISC",
+  "dependencies": {
+    "bcryptjs": "^2.4.3",
+    "cross-env": "^7.0.0",
+    "jsonwebtoken": "^8.5.1",
+    "koa": "^2.11.0",
+    "koa-body": "^4.1.1",
+    "koa-bodyparser": "^4.2.1",
+    "koa-json-error": "^3.1.2",
+    "koa-jwt": "^3.6.0",
+    "koa-parameter": "^3.0.1",
+    "koa-router": "^8.0.8",
+    "koa-static": "^5.0.0",
+    "mongoose": "^5.9.1",
+    "nodemon": "^2.0.2",
+    "socket.io": "^2.3.0",
+    "underscore": "^1.9.2"
+  }
+}
