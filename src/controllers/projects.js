@@ -17,6 +17,20 @@ class ProjiectCtl {
     ctx.body = projectList
   }
 
+  async edit(ctx) {
+    ctx.verifyParams({
+      projectName: { type: 'string', required: true }
+    })
+    const projectId = ctx.params.id
+    const project = await Project.findById(projectId)
+    console.log(project);
+    if (project.founder.toString() !== ctx.state.user.id) return ctx.throw(403, '只有项目的管理员才能修改项目信息') 
+    // bug,需要2合一暂时不改
+    await Project.findByIdAndUpdate(projectId, ctx.request.body)
+    const nowProject = await Project.findById(projectId)
+    ctx.body = nowProject
+  }
+
   async deletePreoject(ctx) {
     // 删除一个项目
     const pId = ctx.params.id

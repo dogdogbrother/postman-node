@@ -77,7 +77,7 @@ class UsersCtl {
     const members = await Project.find({ members: id });
 
     // 再拿到未读信息数量
-    const noReadNumber = await Info.find({ $and: [{ addressee: id }, { isRead: false}] }).count()
+    const noReadNumber = await Info.find({ $and: [{ addressee: id }, { isRead: false}] }).countDocuments()
 
     ctx.body = {
       userInfo,
