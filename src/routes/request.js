@@ -8,12 +8,12 @@ const {
   create,
   remove,
   reName
-} = require('../controllers/folders')
+} = require('../controllers/requests')
 
-const collectionsRouter = new Router({prefix:'/folder'})
+const collectionsRouter = new Router({prefix:'/request'})
 
 collectionsRouter.post('/', auth, create)
-collectionsRouter.delete('/:collectionId/:folderId', auth, remove)
+collectionsRouter.delete('/:id', auth, remove)
 collectionsRouter.put('/:id', auth, reName)
 
 module.exports = collectionsRouter

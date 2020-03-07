@@ -1,5 +1,6 @@
 const Collection = require('../models/collections');
 const Folder = require('../models/folders');
+const Requset = require('../models/requests');
 
 class CollectionCtl {
   // 创建个集合
@@ -17,44 +18,45 @@ class CollectionCtl {
     ctx.body = mapCollection
   }
 
-  // 查询这个人这个项目下的所有集合
+  // 查询这个人这个项目下的所有集合，不仅要查集合，还有文件夹和接口
   async queryList(ctx) {
     const projectId = ctx.params.id
-    const userId = ctx.state.user.id
-    const collectionList = await Collection.find({ $and: [{ founder: userId }, { project: projectId }] })
-    // 这里呢，我们是拿到了所有的集合，但是还缺东西。
-    // 集合下面应该有接口和文件夹，而文件夹下也会有接口和文件夹，但是他们有一个统一的地方，就是同一个 projectId。
-    // 因为暂时只写到文件夹这里，就不处理接口的问题
-    // 所以我的做法是，先找到所有的 projectId 下的文件夹，递归数组，找到pid不为null的数组，挂在到数组中对应的对象的children里，再剔除掉自己。
-    // 最后数组中就全部是pid为空的文件夹了，挂在到对应的集合children下就ok了。
+    // 1. 我们先找到这和项目下的所有的集合和文件夹，遍历循环加上children
+    const collectionList = await Collection.find({ project: projectId }, null, { lean:true })
+    let folders = await Folder.find({ project: projectId }, null, { lean:true })
+    collectionList.forEach(collection => collection.children = [])
+    folders.forEach(folder => folder.children = [])
 
-    // 1 先找到全部的文件夹
-    const folders = await Folder.find({ project: projectId })
-
-    // 2. 把数组直接的父子级关系给理清了
-    let mapFolders = folders.map(folder => {
-      const mapoFolder = folder.toObject()
-      mapoFolder.children = []
-      return mapoFolder
-    })
-    mapFolders.forEach(folder => {
-      if (folder.pId) { // 假如存在代表这个至少是2级的目录，肯定能挂在到别人身上
-        mapFolders.find(item => item._id.toString() === folder.pId.toString()).children.push(folder)
+    // 2. 找到所有的接口,遍历他，让他进入集合或是文件夹下
+    const requests = await Requset.find({ project: projectId })
+    requests.forEach(request => {
+      if (request.folder) {
+        const folder = folders.find(folder => folder._id.toString() === request.folder.toString())
+        folder.children.push(request)
+      } else {
+        const collection = collectionList.find(collection => collection._id.toString() === request.collectionId.toString())
+        collection.children.push(request)
       }
     })
 
-    // 3. 把有pid的给清出去，留下的都是集合根目录下的
-    mapFolders = mapFolders.filter(folder => !folder.pId)
-    // 4. 把全部的集合对象变成普通的对象，便于我添加children，同时顺便看下有没有文件夹能让我挂载
-    let mapCollectionList = collectionList.map(collection => {
-      const mapCollection =  collection.toObject()
-      mapCollection.children = []
-      const findmapFolders = mapFolders.filter(folder => folder.collectionId.toString() === mapCollection._id.toString())
-      mapCollection.children.push(...findmapFolders)
-      return mapCollection
+    // 3. 先翻转数组，是因为文件夹是正序的，而我是要unshift的。再遍历所有的文件夹，如果这个文件夹有父级，就从自身找到这个父级，然后把子级添加到头部
+    folders.reverse()
+    folders.forEach(folder => {
+      if (folder.pId) { // 假如存在代表这个至少是2级的目录，肯定能挂在到别人身上
+
+        folders.find(item => item._id.toString() === folder.pId.toString()).children.unshift(folder)
+      }
     })
-    //  至此，文件夹的问题得以解决
-    ctx.body = mapCollectionList
+    // 4. 把有pid的给清出去，留下的都是集合根目录下的
+    folders = folders.filter(folder => !folder.pId)
+
+    // 5. 下载文件夹数组里面是全部等待挂载到集合里面的,主要文件夹是在接口的上面的，所以
+    collectionList.forEach(collection => {
+      const findFolders = folders.filter(folder => folder.collectionId.toString() === collection._id.toString())
+      collection.children.unshift(...findFolders)
+    })
+    //  至此，集合、文件夹、接口的嵌套问题得以解决
+    ctx.body = collectionList
   }
 
   async remove(ctx) {

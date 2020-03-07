@@ -1,17 +1,15 @@
-const Folder = require('../models/folders');
+const Requst = require('../models/requests');
 
 class FolederCtl {
   // 创建个文件夹
   async create(ctx) {
     // 需要注意的是，如果没有pid，就是集合的根目录，
     const userId = ctx.state.user.id
-    const folder = await new Folder({
+    const request = await new Requst({
       ...ctx.request.body,
       founder: userId
     }).save()
-    const mapFolder = folder.toObject()
-    mapFolder.children = []
-    ctx.body = mapFolder
+    ctx.body = request
   }
 
   // 删除某个文件夹

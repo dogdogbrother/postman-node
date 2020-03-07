@@ -2,6 +2,19 @@ const Project = require('../models/projects');
 const User = require('../models/users')
 const Info = require('../models/infos')
 class ProjiectCtl {
+  async queryAll(ctx) {
+    // 再拿我创建的项目list，用 founder 匹配
+    const founders = await Project.find({ founder: ctx.state.user.id });
+
+    // 在所有项目中找到members字段数组里面有我的项目
+    const members = await Project.find({ members: ctx.state.user.id });
+
+    ctx.body = {
+      founders,
+      members
+    }
+  }
+
   async create(ctx) {
     ctx.verifyParams({
       projectName: { type: 'string', required: true }

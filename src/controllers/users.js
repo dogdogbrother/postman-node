@@ -50,16 +50,12 @@ class UsersCtl {
       email
     }).save();
 
-    if(user) {
-      delete user.password
-      // 注册等于登录
-      const token = jsonwebtoken.sign({ id: user._id, username }, secret, { expiresIn: '7d' })
-      ctx.cookies.set('jwt', token, { maxAge: 604800000, httpOnly: false  })
-      // ctx.body = '注册成功,已登录'
-      ctx.body = "注册成功,已登录" 
-    } else{
-      ctx.throw(500, '服务器内部错误')
-    }
+    delete user.password
+    // 注册等于登录
+    const token = jsonwebtoken.sign({ id: user._id, username }, secret, { expiresIn: '7d' })
+    ctx.cookies.set('jwt', token, { maxAge: 604800000, httpOnly: false  })
+    // ctx.body = '注册成功,已登录'
+    ctx.body = user
   }
 
   // 这个就是把个人信息啊，创建的项目列表啊等等都放在一起
