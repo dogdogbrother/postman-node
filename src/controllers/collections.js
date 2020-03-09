@@ -74,6 +74,5 @@ class CollectionCtl {
     const collection = await Collection.findById(id)
     ctx.body = collection
   }
-
 }
 module.exports = new CollectionCtl()

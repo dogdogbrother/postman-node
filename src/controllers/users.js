@@ -26,13 +26,12 @@ class UsersCtl {
     
     await ctx.cookies.set('jwt', token, { maxAge: 604800000, httpOnly: false })
 
-    const noReadNumber = await Info.find({ $and: [{ addressee: id }, { isRead: false}] }).countDocuments()
+    const noReadNumber = await Info.find({ $and: [{ addressee: findUser3.id }, { isRead: false}] }).countDocuments()
 
     ctx.body = {
       userInfo: findUser3,
       noReadNumber
     }
-    // ctx.body = findUser3
   }
 
   async register(ctx) {
