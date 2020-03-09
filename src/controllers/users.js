@@ -13,19 +13,26 @@ class UsersCtl {
       password: { type: 'string', required: true }
     })
     const { username, password } = ctx.request.body;
+    // 这个地方能and优化下
     const findUser1 = await User.findOne({ username }).select("+password");
     const findUser2 = await User.findOne({ email: username }).select("+password");
     // 因为不知道用户输入的是用户名还是邮箱，所以查询2次
-    if (!findUser1 && !findUser2) ctx.throw(400, '用户名邮箱或密码错误')
+    if (!findUser1 && !findUser2) ctx.throw(403, '用户名邮箱或密码错误')
     const findUser3 = findUser1 || findUser1
     if (!bcrypt.compareSync(password, findUser3.password)) {
-      ctx.throw(400, '用户名邮箱或密码错误')
+      ctx.throw(403, '用户名邮箱或密码错误')
     }
     const token = jsonwebtoken.sign({ id: findUser3._id, username  }, secret, { expiresIn: '7d' })
     
     await ctx.cookies.set('jwt', token, { maxAge: 604800000, httpOnly: false })
-    // ctx.body = '登陆成功'
-    ctx.body = token
+
+    const noReadNumber = await Info.find({ $and: [{ addressee: id }, { isRead: false}] }).countDocuments()
+
+    ctx.body = {
+      userInfo: findUser3,
+      noReadNumber
+    }
+    // ctx.body = findUser3
   }
 
   async register(ctx) {

@@ -21,17 +21,19 @@ class CollectionCtl {
   // 查询这个人这个项目下的所有集合，不仅要查集合，还有文件夹和接口
   async queryList(ctx) {
     const projectId = ctx.params.id
-    // 1. 我们先找到这和项目下的所有的集合和文件夹，遍历循环加上children
+    // 1. 我们先找到这和项目下的所有的集合和文件夹，遍历循环加上children,active属性后端是一点用都没有的，给前端做点击使用
     const collectionList = await Collection.find({ project: projectId }, null, { lean:true })
     let folders = await Folder.find({ project: projectId }, null, { lean:true })
-    collectionList.forEach(collection => collection.children = [])
-    folders.forEach(folder => folder.children = [])
+    collectionList.forEach(collection => { collection.children = []; collection.active = false} )
+    folders.forEach(folder => { folder.children = []; folder.active = false })
 
     // 2. 找到所有的接口,遍历他，让他进入集合或是文件夹下
     const requests = await Requset.find({ project: projectId })
     requests.forEach(request => {
+      requests.active = false
       if (request.folder) {
         const folder = folders.find(folder => folder._id.toString() === request.folder.toString())
+        if (!folder) return
         folder.children.push(request)
       } else {
         const collection = collectionList.find(collection => collection._id.toString() === request.collectionId.toString())
