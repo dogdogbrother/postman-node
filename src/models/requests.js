@@ -9,6 +9,7 @@ const { Schema, model, options } = require('./config')
  * founder：建立者
  * folder：所属文件夹
  * method：接口方法
+ * content: 接口内的一些详细信息，调用地址啊，参数啊什么的
  */
 
 const requestSchema = new Schema({
@@ -21,6 +22,7 @@ const requestSchema = new Schema({
   collectionId: { type: Schema.Types.ObjectId, ref: "Collection", require: true },
   folder: { type: Schema.Types.ObjectId, ref: "Folder" },
   method: { type: String, enum: ['get', 'post', 'delete', 'put', 'patch'], defaulet: 'get',  required: true },
+  content: { type: Object }
 }, options);
 
 module.exports = model('Request', requestSchema);   

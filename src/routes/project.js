@@ -6,6 +6,7 @@ const auth = jwt({ secret })
 
 const { 
   queryAll,
+  queryProject,
   create,
   edit,
   deletePreoject,
@@ -18,6 +19,8 @@ const {
 const projectsRouter = new Router({prefix:'/project'})
 
 projectsRouter.get('/all', auth, queryAll) //  创建个项目
+projectsRouter.get('/:id', auth, queryProject) //  创建个项目
+
 projectsRouter.post('/', auth, create) //  创建个项目
 projectsRouter.put('/:id', auth, edit) //  修改这个项目名词和描述
 projectsRouter.delete('/:id', auth, deletePreoject) //  删除个项目

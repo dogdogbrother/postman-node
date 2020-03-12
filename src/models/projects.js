@@ -5,8 +5,8 @@ const { Schema, model, options } = require('./config')
 const projectSchema = new Schema({
   createdAt: { type: String, select: false },
   updatedAt: { type: String, select: false },
-  projectName: { type: String, require: true },
-  projectDescribe: { type: String, default: '' },
+  name: { type: String, require: true },
+  describe: { type: String, default: '' },
   founder: { type: Schema.Types.ObjectId, ref: "User" , require: true},
   members: {
     type: [{ type: Schema.Types.ObjectId, ref: 'User' }],

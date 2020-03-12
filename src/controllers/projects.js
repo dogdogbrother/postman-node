@@ -14,13 +14,17 @@ class ProjiectCtl {
       members
     }
   }
+  async queryProject(ctx) {
+    const project = await Project.findById(ctx.params.id)
+    ctx.body = project
+  }
 
   async create(ctx) {
     ctx.verifyParams({
-      projectName: { type: 'string', required: true }
+      name: { type: 'string', required: true }
     })
-    const { projectName } = ctx.request.body
-    let findProject = await Project.findOne({ projectName });
+    const { name } = ctx.request.body
+    let findProject = await Project.findOne({ name });
     if (findProject) return ctx.throw(409, '已存在相同名字的项目') 
     await new Project({ 
       ...ctx.request.body,
@@ -32,11 +36,10 @@ class ProjiectCtl {
 
   async edit(ctx) {
     ctx.verifyParams({
-      projectName: { type: 'string', required: true }
+      name: { type: 'string', required: true }
     })
     const projectId = ctx.params.id
     const project = await Project.findById(projectId)
-    console.log(project);
     if (project.founder.toString() !== ctx.state.user.id) return ctx.throw(403, '只有项目的管理员才能修改项目信息') 
     // bug,需要2合一暂时不改
     await Project.findByIdAndUpdate(projectId, ctx.request.body)
@@ -57,7 +60,7 @@ class ProjiectCtl {
     const userInfos = findProject.members.map(member => {
       return {
         title: '系统消息',
-        msg: `${findProject.projectName} 项目已经由管理员解散，您将不再是此项目的开发者。`,
+        msg: `${findProject.name} 项目已经由管理员解散，您将不再是此项目的开发者。`,
         founder: uId,
         addressee: member,
         isRead: false
@@ -92,7 +95,7 @@ class ProjiectCtl {
     const userInfos = users.map(user => {
       return {
         title: "系统消息", 
-        msg: `${findProject.projectName} 项目的管理员邀请您进入此项目。`,
+        msg: `${findProject.name} 项目的管理员邀请您进入此项目。`,
         founder: userId,  //  发起人，也就是 jwt 校验人
         addressee: user._id, //  收信人
         isRead: false
@@ -119,7 +122,6 @@ class ProjiectCtl {
   async deleteMember(ctx) {
     // 这个缺少权限校验，就是只有发起者才能踢人，暂时不写了
     const { projectId, memberId } = ctx.params
-    console.log(projectId, memberId);
     const project = await Project.findById(projectId).populate("members")
     project.members = project.members.filter(member => member._id.toString() !== memberId)
     await Project.findByIdAndUpdate(projectId, project)
